@@ -1,4 +1,5 @@
-﻿using ASPCoreWebAPI.Models;
+﻿using ASPCoreWebAPI.Dto;
+using ASPCoreWebAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,14 +18,30 @@ namespace ASPCoreWebAPI.Controllers
         }
  /********************************** Get all Students *******************************************/
 
-        [HttpGet]
-        public async Task<ActionResult<List<Student>>> getStudent()
+        [HttpGet("all")]
+        public async Task<ActionResult<List<Student>>> getAllStudent()
         {
             var data = await dbContext.Students.ToListAsync();
             return Ok(data);
          }
 
- /********************************** Get Student By Id *******************************************/
+
+/********************************** Get Student name And Last Name *******************************************/
+        [HttpGet]
+        public async Task<ActionResult<List<Student>>> getStudent()
+        {
+            var data = await dbContext.Students
+                 .Select(s => new StudentDto
+                 {
+                     FirstName = s.FirstName,
+                     LastName = s.LastName
+                 })
+                 .ToListAsync();
+            return Ok(data);
+        }
+
+
+/********************************** Get Student By Id *******************************************/
         [HttpGet("{id}")]
         public async Task<ActionResult<Student>> getStudentById(int id)
         {
@@ -56,7 +73,7 @@ namespace ASPCoreWebAPI.Controllers
             return Ok(std);
         }
 
-/********************************** Delete Student *******************************************/
+/********************************** Delete Student By Id*******************************************/
         [HttpDelete("{id}")]
         public async Task<ActionResult<Student>> deleteStudent(int id)
         {
@@ -68,6 +85,16 @@ namespace ASPCoreWebAPI.Controllers
              dbContext.Students.Remove(std);
             await dbContext.SaveChangesAsync();
             return Ok(std);
+
+        }
+
+        [HttpDelete("all")]
+        public async Task<ActionResult<Student>> deleteAllStudent()
+        {
+            
+            dbContext.Students.RemoveRange(dbContext.Students);
+            await dbContext.SaveChangesAsync();
+            return NoContent();
 
         }
     }
